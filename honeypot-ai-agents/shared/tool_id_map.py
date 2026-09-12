@@ -7,8 +7,6 @@ TOOL_ID_MAP: dict[str, int] = {
 }
 
 # Reverse mapping for display (dashboard, logs)
-# dict comprehension: flips keys and values
-# {1: "read_file", 2: "summarize", ...}
 ID_TOOL_MAP: dict[int, str] = {v: k for k, v in TOOL_ID_MAP.items()}
 
 # Risk classification for each tool
@@ -22,11 +20,8 @@ TOOL_RISK_LEVEL: dict[str, str] = {
     "send_email": "high",
 }
 
-# Maximum sequence length — all sequences are padded to this length
-# Why 8? Our agent sessions are short (2-5 tool calls typically)
-# 8 gives enough room for complex sessions while keeping tensors small
+# Maximum sequence length all sequences are padded to this length
 MAX_SEQ_LEN = 8
 
-# Padding value — represents "no action taken" in a sequence slot
-# [1, 2, 0, 0, 0, 0, 0, 0] means "read_file, summarize, then nothing"
+# Padding value represents "no action taken" in a sequence slot
 PAD_TOKEN = 0

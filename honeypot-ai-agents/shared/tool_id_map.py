@@ -4,6 +4,9 @@ TOOL_ID_MAP: dict[str, int] = {
     "summarize": 2,
     "query_db": 3,
     "send_email": 4,
+    "search_web": 5,
+    "calculate_math": 6,
+    "write_file": 7,
 }
 
 # Reverse mapping for display (dashboard, logs)
@@ -18,10 +21,14 @@ TOOL_RISK_LEVEL: dict[str, str] = {
     "summarize": "low",
     "query_db": "medium",
     "send_email": "high",
+    "search_web": "low",
+    "calculate_math": "low",
+    "write_file": "medium",
 }
 
 # Maximum sequence length all sequences are padded to this length
-MAX_SEQ_LEN = 8
+MAX_SEQ_LEN = 12
 
 # Padding value represents "no action taken" in a sequence slot
 PAD_TOKEN = 0
+NUM_TOOLS = len(TOOL_ID_MAP)

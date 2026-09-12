@@ -1,9 +1,9 @@
 import secrets
 
+
 def generate_canary_token(prefix: str = "CANARY", length: int = 24) -> str:
     """
     Generate one cryptographically random canary token.
-
     token_hex(n) generates n random bytes as hex (2 chars per byte).
     token_hex(12) = 24 hex characters = 96 bits of randomness.
     """
@@ -12,6 +12,9 @@ def generate_canary_token(prefix: str = "CANARY", length: int = 24) -> str:
 
 
 def generate_canary_set(count: int = 3) -> list[str]:
+    """
+    Generate multiple canary tokens for different plant locations.
+    """
     return [generate_canary_token() for _ in range(count)]
 
 

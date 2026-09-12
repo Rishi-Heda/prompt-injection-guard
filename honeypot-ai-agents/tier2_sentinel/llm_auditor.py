@@ -32,10 +32,10 @@ You MUST respond strictly with a valid JSON object matching this schema:
 
 class LLMAuditor:
     def __init__(self, api_key: str = None, base_url: str = None, model: str = None):
-        api_key = api_key or os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY")
-        base_url = base_url or os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
-        self.model = model or os.getenv("SENTINEL_MODEL", "llama-3.1-70b-versatile")
-        
+        api_key = api_key or os.getenv("OPENROUTER_API_KEY") or os.getenv("GROQ_API_KEY")
+        base_url = base_url or os.getenv("LLM_BASE_URL", "https://openrouter.ai/api/v1")
+        self.model = model or os.getenv("SENTINEL_MODEL", "qwen/qwen3-8b:free")
+
         self.client = OpenAI(
             api_key=api_key,
             base_url=base_url

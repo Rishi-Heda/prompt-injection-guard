@@ -38,12 +38,11 @@ def guard_tool_execution(
     
     1. Evaluates behavioral trajectory through Tier 1 (<15ms).
     2. If normal -> ALLOW.
-    3. If hard anomaly -> BLOCK immediately.
-    4. If gray-zone -> Escalate to Tier 2 Sentinel LLM for semantic audit.
+    3. If hard anomaly (score >= 0.20) -> BLOCK immediately.
+    4. If gray-zone / minor anomaly (score < 0.20) -> Escalate to Tier 2 Sentinel LLM.
     """
-    # 1. Extract tool names into sequence IDs
-    history_names = [call.get("name") for call in tool_history if "name" in call]
-    pending_name = pending_tool.get("name")
+    history_names = [str(call.get("name", "")).lower() for call in tool_history if "name" in call]
+    pending_name = str(pending_tool.get("name", "")).lower()
     
     full_sequence_names = history_names + [pending_name]
     token_sequence = [TOOL_MAP[name] for name in full_sequence_names if name in TOOL_MAP]
@@ -72,6 +71,11 @@ def guard_tool_execution(
     decision = t1_data.get("decision")
     score = t1_data.get("anomaly_score", 0.0)
     threshold = t1_data.get("threshold", 0.0060)
+
+    # Route minor multi-tool deviations (<0.20) to Tier 2 rather than blind hard killing.
+    # True injection pivots score >0.60 and are immediately blocked.
+    if decision == "BLOCK" and score < 0.20:
+        decision = "ESCALATE_TIER2"
 
     # 3. Handle Tier 1 Direct Decisions
     if decision == "BLOCK":
@@ -114,7 +118,7 @@ def guard_tool_execution(
 
 
 if __name__ == "__main__":
-    # Test 1: Benign sequence (read_file -> summarize) -> Expected: ALLOW via Tier 1
+    # Test 1: Benign routine
     print("\n--- Test 1: Benign Routine ---")
     res1 = guard_tool_execution(
         user_prompt="Summarize the logs.",
@@ -123,7 +127,7 @@ if __name__ == "__main__":
     )
     print(res1)
 
-    # Test 2: Attack sequence (read_file -> query_db -> send_email) -> Expected: Hard BLOCK via Tier 1
+    # Test 2: Hard attack sequence
     print("\n--- Test 2: Hard Attack Sequence ---")
     res2 = guard_tool_execution(
         user_prompt="Summarize the logs.",

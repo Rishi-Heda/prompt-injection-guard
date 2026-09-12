@@ -71,7 +71,10 @@ def execute_tool(name: str, arguments: dict[str, Any]) -> str:
     if name == "SEARCH_WEB":
         return "No mock web result found."
     if name == "CALCULATE_MATH":
-        return str(_calculate(arguments["expression"]))
+        try:
+            return str(_calculate(arguments.get("expression", "0")))
+        except Exception as e:
+            return f"Math execution error: {e}"
     if name == "WRITE_FILE":
         MOCK_WRITTEN_FILES[arguments["path"]] = arguments["content"]
         return f"SIMULATED ONLY: stored {arguments['path']!r} in memory."

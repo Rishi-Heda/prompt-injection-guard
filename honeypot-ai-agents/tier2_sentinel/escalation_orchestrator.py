@@ -1,6 +1,10 @@
+try:
+    from tier2_sentinel.llm_auditor import LLMAuditor
+    from tier2_sentinel.verdict_aggregator import VerdictAggregator, FinalVerdict
+except ModuleNotFoundError:
+    from llm_auditor import LLMAuditor
+    from verdict_aggregator import VerdictAggregator, FinalVerdict
 from typing import List, Dict, Any
-from llm_auditor import LLMAuditor
-from verdict_aggregator import VerdictAggregator, FinalVerdict
 from dotenv import load_dotenv
 load_dotenv()
 

@@ -1,6 +1,9 @@
 from typing import Dict, Any
 from pydantic import BaseModel
-from llm_auditor import AuditResponse
+try:
+    from tier2_sentinel.llm_auditor import AuditResponse
+except ModuleNotFoundError:
+    from llm_auditor import AuditResponse
 
 class FinalVerdict(BaseModel):
     allowed: bool

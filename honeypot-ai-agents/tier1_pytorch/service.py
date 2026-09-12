@@ -5,7 +5,7 @@ import torch.nn as nn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List
-from tier1_pytorch.model import TrajectoryAutoencoder
+from model import TrajectoryAutoencoder
 
 app = FastAPI(
     title="Sentinel Tier 1 Trajectory Firewall",

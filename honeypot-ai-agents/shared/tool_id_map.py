@@ -1,0 +1,9 @@
+TOOL_ID_MAP = {
+	"READ_FILE": 1,
+	"SUMMARIZE": 2,
+	"QUERY_DB": 3,
+	"SEND_EMAIL": 4,
+	"SEARCH_WEB": 5,
+	"CALCULATE_MATH": 6,
+	"WRITE_FILE": 7,
+}

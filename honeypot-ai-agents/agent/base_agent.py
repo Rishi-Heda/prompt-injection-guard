@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 from datetime import datetime, timezone
 from typing import Any
 
@@ -9,6 +10,11 @@ from .middleware_hook import guard_tool_execution
 from .providers import create_provider
 from .system_prompt import SYSTEM_PROMPT
 from .tools import TOOL_SCHEMAS, execute_tool
+
+# --- Tier 0 Canary Imports ---
+from tier0_canary.canary_planter import CanaryPlanter
+from tier0_canary.leak_detector import LeakDetector
+from tier0_canary.kill_switch import KillSwitch
 
 MAX_STEPS = 6
 
@@ -46,9 +52,19 @@ class Agent:
         user_task: str,
         doc_id: str = "",
     ) -> tuple[str, list[dict[str, Any]]]:
+        # 1. Initialize Tier 0 Canary System for this session
+        session_id = str(uuid.uuid4())
+        planter = CanaryPlanter()
+        detector = LeakDetector(planter.get_all_canaries(), planter.get_canary_source_map())
+        kill_switch = KillSwitch(session_id)
+
         full_user_prompt = f"{user_task}\nDocument ID: {doc_id}" if doc_id else user_task
+        
+        # 2. Inject Canary Tokens into the System Prompt
+        secured_system_prompt = planter.inject_into_system_prompt(SYSTEM_PROMPT)
+
         messages: list[dict[str, Any]] = [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": secured_system_prompt},
             {"role": "user", "content": full_user_prompt},
         ]
         trace: list[dict[str, Any]] = []
@@ -104,7 +120,25 @@ class Agent:
                 else:
                     arguments = raw_arguments or {}
 
-                # Multi-Tier Firewall Interception (Tier 1 & Tier 2)
+                # 3. TIER 0 FIREWALL: Fast String-Matching Canary Check
+                leak_result = detector.scan_all_tool_args(name, arguments)
+                if leak_result.leaked:
+                    incident = kill_switch.trigger(leak_result, name, arguments)
+                    output = (
+                        f"[CRITICAL SECURITY ALERT] Tier 0 Kill Switch Triggered! "
+                        f"Data exfiltration attempt detected. "
+                        f"Leaked source(s): {', '.join(incident.compromised_sources)}. "
+                        f"Session terminated immediately."
+                    )
+                    trace.append(self._entry(step, reasoning, name, arguments, output))
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": _value(tool_call, "id"),
+                        "content": output,
+                    })
+                    return output, trace
+
+                # 4. Multi-Tier Firewall Interception (Tier 1 & Tier 2)
                 guard_result = guard_tool_execution(
                     user_prompt=full_user_prompt,
                     tool_history=executed_history,
